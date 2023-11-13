@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>59.0</apiVersion>
+    <assignments>
+        <description>To assign values to the task fields</description>
+        <name>Assign_Task_Values</name>
+        <label>Assign Task Values</label>
+        <locationX>264</locationX>
+        <locationY>566</locationY>
+        <assignmentItems>
+            <assignToReference>task.WhatId</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Iterate_on_Opportunities.Id</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>task.ActivityDate</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Flow.CurrentDate</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>task.Description</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>TaskDescription</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>task.Subject</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Enter_Subject_For_Task</elementReference>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>task.Priority</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>High</stringValue>
+            </value>
+        </assignmentItems>
+        <assignmentItems>
+            <assignToReference>taskList</assignToReference>
+            <operator>Add</operator>
+            <value>
+                <elementReference>task</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Iterate_on_Opportunities</targetReference>
+        </connector>
+    </assignments>
+    <description>To create follow up task for opportunities which are closed lost.</description>
+    <environments>Default</environments>
+    <interviewLabel>Create Task From Account {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Create Task From Account</label>
+    <loops>
+        <description>To iterate opportunities</description>
+        <name>Iterate_on_Opportunities</name>
+        <label>Iterate on Opportunities</label>
+        <locationX>176</locationX>
+        <locationY>458</locationY>
+        <collectionReference>Fetch_Closed_Lost_Opportunities</collectionReference>
+        <iterationOrder>Asc</iterationOrder>
+        <nextValueConnector>
+            <targetReference>Assign_Task_Values</targetReference>
+        </nextValueConnector>
+        <noMoreValuesConnector>
+            <targetReference>Create_Task_Record</targetReference>
+        </noMoreValuesConnector>
+    </loops>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordCreates>
+        <description>To create task record from task list</description>
+        <name>Create_Task_Record</name>
+        <label>Create Task Record</label>
+        <locationX>176</locationX>
+        <locationY>758</locationY>
+        <connector>
+            <targetReference>Task_Created_Successfully</targetReference>
+        </connector>
+        <inputReference>taskList</inputReference>
+    </recordCreates>
+    <recordLookups>
+        <description>Fetch current account record</description>
+        <name>Fetch_Account</name>
+        <label>Fetch Account</label>
+        <locationX>176</locationX>
+        <locationY>242</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Fetch_Closed_Lost_Opportunities</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Account</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordLookups>
+        <description>To fetch related closed lost opportunities for given account.</description>
+        <name>Fetch_Closed_Lost_Opportunities</name>
+        <label>Fetch Closed Lost Opportunities</label>
+        <locationX>176</locationX>
+        <locationY>350</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Iterate_on_Opportunities</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>AccountId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Fetch_Account.Id</elementReference>
+            </value>
+        </filters>
+        <filters>
+            <field>StageName</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>Closed Lost</stringValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Opportunity</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <screens>
+        <name>Enter_Subject</name>
+        <label>Enter Subject</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Fetch_Account</targetReference>
+        </connector>
+        <fields>
+            <name>Enter_Subject_For_Task</name>
+            <dataType>String</dataType>
+            <fieldText>Enter Subject For Task</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>true</isRequired>
+        </fields>
+        <nextOrFinishButtonLabel>Create Task</nextOrFinishButtonLabel>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>fault_screen</name>
+        <label>fault screen</label>
+        <locationX>176</locationX>
+        <locationY>974</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <fields>
+            <name>errorscreen</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;color: rgb(186, 17, 17); font-size: 16px;&quot;&gt;Error&lt;/strong&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>Task_Created_Successfully</name>
+        <label>Task Created Successfully</label>
+        <locationX>176</locationX>
+        <locationY>866</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <connector>
+            <targetReference>fault_screen</targetReference>
+        </connector>
+        <fields>
+            <name>Success</name>
+            <extensionName>flowruntime:image</extensionName>
+            <fieldType>ComponentInstance</fieldType>
+            <inputParameters>
+                <name>imageName</name>
+                <value>
+                    <elementReference>SuccessImage</elementReference>
+                </value>
+            </inputParameters>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <storeOutputAutomatically>true</storeOutputAutomatically>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Enter_Subject</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <textTemplates>
+        <name>SuccessImage</name>
+        <isViewedAsPlainText>false</isViewedAsPlainText>
+        <text>&lt;p&gt;&lt;img src=&quot;https://flows9-dev-ed.develop.file.force.com/sfc/servlet.shepherd/version/download/0682t00000KcVfC?asPdf=false&amp;amp;operationContext=CHATTER&quot; alt=&quot;download.png&quot;&gt;&lt;/p&gt;</text>
+    </textTemplates>
+    <textTemplates>
+        <name>TaskDescription</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>The Account - {!Fetch_Account.Name} whose Opportunity - {!Iterate_on_Opportunities.Name} is Closed Lost. Check whether delete it or modify it.</text>
+    </textTemplates>
+    <variables>
+        <description>To fetch current record id to the flow</description>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>To create new task</description>
+        <name>task</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Task</objectType>
+    </variables>
+    <variables>
+        <description>To store task in order to perform dml on them</description>
+        <name>taskList</name>
+        <dataType>SObject</dataType>
+        <isCollection>true</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Task</objectType>
+    </variables>
+</Flow>
